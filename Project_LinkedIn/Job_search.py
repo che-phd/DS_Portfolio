@@ -2,6 +2,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 import pandas as pd
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException
 import json
@@ -18,9 +19,10 @@ class Jobsearch():
         self._password = config['password']
         self._keywords = config['keywords']
         self._location = config['location']
-        self._driver = webdriver.Safari()
+        self._driver = webdriver.Chrome()
         self._title_list = []
         self._location_list = []
+        self._job_link_list = []
 
     def login_linkedin(self):
         """This function logs into your personal LinkedIn profile"""
@@ -38,6 +40,7 @@ class Jobsearch():
         login_pass.send_keys(self._password)
         login_pass.send_keys(Keys.RETURN)
         print("\n Login successfully！")
+        print(self._driver.current_url)
 
     def job_search(self):
         """This function goes to the 'Jobs' section a looks for all the jobs that matches the keywords and location"""
@@ -61,13 +64,18 @@ class Jobsearch():
         time.sleep(1)
         search_location.send_keys(Keys.RETURN)
 
+        time.sleep(5) # wait page to load
+
         # saving current url
         self._current_url = self._driver.current_url
         # get the number of jobs found
-        num_jobs = self._driver.find_element_by_class_name(
-            "display-flex.t-12.t-black--light.t-normal")
+        # try:  # didn't find total search results
+        print(self._driver.current_url)
+        num_jobs = self._driver.find_element(By.XPATH, '//*[@id="main"]/div/section[1]/header/div[1]/small')
         self._num_jobs_int = int(num_jobs.text.strip().split(" ")
-                                 [0].replace(",", ""))
+                                [0].replace(",", ""))
+        # except Exception as e:
+        # self._num_jobs_int = 20
         print("\n {} jobs found.".format(self._num_jobs_int))
 
     def saving_all_jobs(self):
@@ -78,12 +86,12 @@ class Jobsearch():
             find_pages = self._driver.find_elements_by_class_name(
                 "artdeco-pagination__indicator.artdeco-pagination__indicator--number")
             total_pages = find_pages[len(find_pages)-1].text
-            self._num_pages_int = int(total_pages.strip())
+            self._num_pages_int = 10 or int(total_pages.strip()) # limit the number of pages to save
 
             # saving jobs from the first page
             self._saving_jobs_in_page()
             # saving jobs from rest of the pages
-            for i in range(1, self._num_pages_int):
+            for i in range(1, self._num_pages_int): #self._num_pages_int
                 self._driver.get(self._current_url+'&start='+str(i*25))
                 time.sleep(5)
                 self._saving_jobs_in_page()
@@ -94,8 +102,11 @@ class Jobsearch():
             filter(lambda x: ((x != "Remote") & ("$"not in x)), self._location_list))
 
         df = pd.DataFrame({"Title": self._title_list,
-                           "Location": self._non_remote_list})
-        df.to_csv('ds_canada.csv', sep='\t', header=True)
+                        #    "Location": self._non_remote_list,
+                           "Links": self._job_link_list
+                           }
+                        )
+        df.to_csv('ds_jobs.csv', sep='\t', header=True)
         print("All jobs saved!")
 
     def _saving_jobs_in_page(self):
@@ -126,6 +137,7 @@ class Jobsearch():
         #
         for title in titles:
             self._title_list.append(title.text.strip())
+            self._job_link_list.append(title.get_attribute('href'))
         for location in locations:
             self._location_list.append(location.text.strip())
 
@@ -150,7 +162,7 @@ class Jobsearch():
         """This function closes the actual session"""
 
         print('End of the session, see you later!')
-        self.driver.close()
+        self._driver.close()
 
 
 if __name__ == '__main__':
