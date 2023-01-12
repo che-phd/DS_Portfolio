@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav class="nav bg-secondary container">
+  <a class="nav-link text-light" href="{{ url_for('batch') }}">Batch Predict</a>
+  <a class="nav-link text-light" href="{{ url_for('single') }}">Single Predict</a>
+  <a class="nav-link text-light" href="{{ url_for('download') }}">Download</a>
+</nav>
+<br>
+
+  <div class="container" style="align-items: center;">
+    <h4>Write a Complaint to Predict</h4>
+    <form action="" method="post">
+      <textarea name="single_complaint" rows="4" cols="70"
+      placeholder="enter complaint narrative" onfocus="this.placeholder = ''"
+      onblur="this.placeholder = 'enter complaint narrative'"></textarea>
+      <input type="submit" name="single_pred" class="btn btn-primary btn-lg" value="Predict">
+    </form>
+  </div>
+
+  <br>
+{% if df is not none %}
+  <div class="container">
+    {{ df | safe }}
+  </div>
+{% endif %}
+{% endblock %}

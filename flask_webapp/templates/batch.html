@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav class="nav bg-secondary container">
+  <a class="nav-link text-light" href="{{ url_for('batch') }}">Batch Predict</a>
+  <a class="nav-link text-light" href="{{ url_for('single') }}">Single Predict</a>
+  <a class="nav-link text-light" href="{{ url_for('download') }}">Download</a>
+</nav>
+<br>
+
+  <div class="container" style="align-items: center;">
+    <div class="row">
+      <div class="col-sm-4">
+    <h4>Upload a File to Predict</h4>
+    <form method="post" enctype="multipart/form-data">
+      {{ uploadform.file }}
+      <input type="submit" class="btn btn-primary btn-md" value="Upload">
+    </form>
+    </div>
+
+    <div class="col-sm-4">
+      <h3>Select a Dataset to Predict</h3>
+      <form method="post" name="selected_dataset">
+        {{ selectform.select }}
+        <input type="submit" name="batch_pred" class="btn btn-primary btn-lg" value="Predict">
+      </form>
+    </div>
+  </div>
+  <br>
+<div>
+  {% for mesg in get_flashed_messages() %}
+  <h5>{{ mesg }}</h5>
+  {% endfor %}
+</div style="align-items: center">
+  <br>
+{% if df is not none %}
+  <div class="container">
+    {{ df | safe }}
+  </div>
+{% endif %}
+{% endblock %}

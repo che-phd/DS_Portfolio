@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav class="nav bg-secondary container">
+  <a class="nav-link text-light" href="{{ url_for('batch') }}">Batch Predict</a>
+  <a class="nav-link text-light" href="{{ url_for('single') }}">Single Predict</a>
+  <a class="nav-link text-light" href="{{ url_for('download') }}">Download</a>
+</nav>
+
+<div class="container" style="align-items: center;">
+    <div class="col-sm-4">
+        <h4>Downloads</h4>
+        {% for res in results %}
+        <a href="{{url_for('send', file=res)}}">{{res}}</a>
+        {% endfor %}
+    </div>
+</div>
+{% if df is not none%}
+    <div class="container">
+        {{ df | safe }}
+    </div>
+{% endif %}
+{% endblock %}
